@@ -1,0 +1,62 @@
+Chainlink Staking v0.1 - Direct Staking Guide
+
+This document describes how to interact with the Chainlink v0.1 staking protocol on Ethereum mainnet directly against the contract or through etherscan.
+
+Official addresses:
+LINK token address - https://etherscan.io/token/0x514910771AF9Ca656af840dff83E8264EcF986CA
+Staking v0.1 protocol address - https://etherscan.io/address/0x3feB1e09b4bb0E7f0387CeE092a52e85797ab889
+
+-----
+HOW TO STAKE
+-----
+
+First series of steps require you to verify staking conditions. You can do this by going to the readContract tab in etherscan: https://etherscan.io/address/0x3feB1e09b4bb0E7f0387CeE092a52e85797ab889#readContract
+
+1. Check to see if the pool is opened by calling "25. isActive" - if the value is "True" then the pool is open. If it's "False" then you are unable to stake.
+
+2. If the pool is open, check to see if the pool has restricted access or is open by calling "13. getMerkleRoot". If the value is "0x0000000000000000000000000000000000000000000000000000000000000000" then all users can stake. If the value is something else it will require allowlist access.
+
+3. Verify any existing staked amounts by calling "19. getStake" and pass in your address. Divide the value returned by 10^18 to get your LINK amount. Community stakers can stake an initial max of 7000 LINK total and Node Operators 50000 LINK.
+
+Second series of steps is to stake, which will be different depending on if the pool has restricted access or not.
+
+4a. No restricted access - go to the LINK contract (https://etherscan.io/token/0x514910771AF9Ca656af840dff83E8264EcF986CA#writeContract) and call "3. transferAndCall". Pass the staking contract value as the `_to (address)` input (0x3feB1e09b4bb0E7f0387CeE092a52e85797ab889), the LINK in juels (LINK x 10^18) in the `_value (uint256)` field, and `0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000` in the `_data(bytes)` field. You can verify your stake by calling "19. getStake" on the staking contract after the transaction is completed to verify.
+
+For example, if you want to stake 100 LINK, you would input the following values to "transferAndCall":
+`_to`: 0x3feB1e09b4bb0E7f0387CeE092a52e85797ab889
+`_value`: 100000000000000000000
+`_data`: 0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000
+
+4b. Restricted access - go to https://github.com/smartcontractkit/chainlink-staking-v0.1-public-guide/blob/main/early-access-proofs.csv to open the allowlist entries. Find your address, and copy down the value in the second column. This is your proof. Follow all the steps in 4a. but insert that value in the `_value (uint256)` input instead of `0x000...`. If you do not find your address in the allowlist file then you will not be able to successfully stake.
+
+For example, if your address is "0x1522f65d0469a86e53c80aa2d53e8b268ef7ba8d", you would input the following values to "transferAndCall" in order to stake 100 LINK:
+`_to`: 0x3feB1e09b4bb0E7f0387CeE092a52e85797ab889
+`_value`: 100000000000000000000
+`_data`: 0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000128c91fcb83e31d8a7728f98dd6d438f5fa942787ccea8580d81e0ad2c9f8c7a3619fb2c7eb30effc5d34acbd4819ba9e8160809735f5881f296ef65574e463ce701be5758fe1d4f44c24b340c2875182955a1859453313b7d1f72b14230f876c288ce12eb654139a6872444454a1ee594a25aa7585075bfbf7206c7e8c2a98199427b60e8e61fecb2869b08678bfc66434284d39b3e4650587db5c7d9da331aa0abbd3ee5c58f3863a036a3243d1bdadff493b4b9394bfbf2c565507b3e8b9a4f2c9c0c1c3e162bf9f30bbbc0d97c6fb99dc7bc4d981aad89e2101671015060a67eab29b324a50603308404c63ce7a3f7be8af84f6df695e5bfbeac462936a26f5012453ef82bfd2c7ccd4b0624e5c7164ac662aa78192da2df474f320ed38be30b4ac67fb55554df8ac15a44fa923a6a2915e22cd8d84bcf828fcf4ef80a7f5f96313d14036059a6a4e152eb6400d040388d2e9f3f188d54224e19c59301030ea1a7a49df2e9da757f6a25cce388e3829fc263a55757ac9e8323507f74679116a3fa341dac797fed10ad22ea364468b336b7f5507c00ae9368f23357a7528fcd1ee0ce53479af3af7ba8d9aabff58285c86b8e1b975923b56e7132d3668a4cfa79341b73f62456fad222cca62e19f484dc10b8ccd3a8c10ed8c8b50d56c4fc2b6b1c013d0b5cecb8df3f1a6fc556f5fe66de0c4d1cd8b0a82256262fd793cf2fe5d75c9c979034cff1617053d09a2eaa7d34b9b8dea9ca2f23162097678c53127506d9ddfae316f5b789d9d9ff6b6115cd94f09d0ad699ff69fb2644cae4bc57
+
+-----
+CHECK YOUR STATUS
+-----
+
+Check the status of your stake - https://etherscan.io/address/0x3feB1e09b4bb0E7f0387CeE092a52e85797ab889#readContract
+
+getStake - pass in your address to get your stake amount in juels
+getBaseReward - pass in your address to get your base rewards in juels
+
+-----
+RAISE AN ALERT
+-----
+
+If you believe that the alert conditions have been met - go to the writeContract commands at https://etherscan.io/address/0x3feB1e09b4bb0E7f0387CeE092a52e85797ab889#writeContract and call "12. raiseAlert".
+
+-----
+UNSTAKE
+-----
+
+If unstaking conditions are met, this can be done by going to the writeContract commands at https://etherscan.io/address/0x3feB1e09b4bb0E7f0387CeE092a52e85797ab889#writeContract and calling "19. unstake"
+
+-----
+MIGRATE
+-----
+
+If migrate conditions are met, this can be done by going to the writeContract commands at https://etherscan.io/address/0x3feB1e09b4bb0E7f0387CeE092a52e85797ab889#writeContract and calling "9. migrate". Future instructions will detail what to input in the `data (bytes)` field.
